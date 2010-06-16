@@ -1,0 +1,6 @@
+require 'rubygems'
+require 'exotic_migrator'
+
+SubcategoryAttributeValue.saree_labels
+SubcategoryAttributeValue.salwar_labels
+SubcategoryAttributeValue.ring_labels
