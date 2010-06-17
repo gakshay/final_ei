@@ -210,6 +210,10 @@ class NewProduct < ActiveRecord::Base
     #set_primary_key "code"
     belongs_to :category
     has_and_belongs_to_many :subcategories
+
+   	def self.collect(options = {})
+    	find(:all, options)
+    end
  
     def self.merge_book_category
     	books = Book.collect()
