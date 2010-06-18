@@ -18,7 +18,6 @@ ActiveRecord::Base.establish_connection(
             :database => "mansur"
 					)
 
-
 class Product < ActiveRecord::Base
     set_table_name "products"
     set_primary_key "code"
