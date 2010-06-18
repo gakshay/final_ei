@@ -15,6 +15,7 @@ ActiveRecord::Base.establish_connection(
     					:database  =>  "mansur"
 )
 module Sitemap
+  # database migrations 
   class CreateSitemapProd < ActiveRecord::Migration
     def self.up
       create_table :sitemap_products do |t|
@@ -45,11 +46,12 @@ module Sitemap
     end
   end
 
+  # models
   class SitemapProd < ActiveRecord::Base
     set_table_name :sitemap_products
 
     def self.collect
-      find(:all, :select => "code,filename,sold", :limit => 100, :offset => 30000)
+      find(:all, :select => "code,filename,sold", :limit => 100000, :offset => 0)
     end
 
     def self.run
@@ -99,29 +101,28 @@ module Sitemap
     def self.run
       products = {}
       NewProduct.collect(:select => "id,code").collect{|p| products[p.code] = p.id}
+      puts "Products length: " + products.length.to_s
       filenames = SpecialBrowseLink.find(:all, :select => "filename,tablename,catname")
       sitemap_products = SitemapProd.collect
       fields = [:product_id, :filename, :sold]
       data = []
       sitemap_products.each do |prod|
-        puts prod.inspect
         product_id = products[prod.code]
-        puts product_id
-        names = filenames.collect{|f| f.filename if f.tablename == prod.filename.split('_')[0] and f.catname.to_s == prod.filename.split('_')[1].to_s}
-        #names = filenames.find(:all, :select => "filename", :conditions => ['tablename = ? and catname = ?', prod.filename.split('_')[0], prod.filename.split('_')[1]]).collect{|a| a.filename}
-        puts names
-        unless product_id.nil? && names.blank?
+        names = filenames.select{|f| f.filename if f.tablename == prod.filename.split('_')[0] and f.catname.to_s == prod.filename.split('_')[1].to_s}.collect(&:filename) unless product_id.nil?
+        unless names.blank?
           names.each do |name|
             data << [product_id, name, prod.sold]
           end
         end
       end
-       puts "data length" + data.length.to_s
+      puts "data length" + data.length.to_s
+      unless data.empty?
         @options = {:validate => false} 
         ActiveRecord::Base.transaction do
           SitemapSpecialSubcategory.import fields, data, @options
         end
-        puts "done"
+      end
+      return true
     end
   end
 end
@@ -130,7 +131,7 @@ end
 # to run the code
 #Sitemap::CreateSitemapProd.down
 #Sitemap::CreateSitemapProd.up
-Sitemap::CreateSitemapSpecialSubcategory.down
-Sitemap::CreateSitemapSpecialSubcategory.up
+#Sitemap::CreateSitemapSpecialSubcategory.down
+#Sitemap::CreateSitemapSpecialSubcategory.up
 #Sitemap::SitemapProd.run
 Sitemap::SitemapSpecialSubcategory.run
