@@ -35,7 +35,8 @@ module Sitemap
     def self.up
       create_table :sitemap_special_subcategories do |t|
         t.integer :product_id
-        t.string :filename, :limit => 100
+        t.integer :special_browse_id
+        t.string :special_browse_name, :limit => 100
         t.boolean :sold, :default=>false
         t.timestamps
       end
@@ -51,7 +52,7 @@ module Sitemap
     set_table_name :sitemap_products
 
     def self.collect
-      find(:all, :select => "code,filename,sold", :limit => 100000, :offset => 0)
+      find(:all, :select => "code,filename,sold", :limit => 100000, :offset => 100000)
     end
 
     def self.run
@@ -102,16 +103,17 @@ module Sitemap
       products = {}
       NewProduct.collect(:select => "id,code").collect{|p| products[p.code] = p.id}
       puts "Products length: " + products.length.to_s
-      filenames = SpecialBrowseLink.find(:all, :select => "filename,tablename,catname")
+      special_browse = SpecialBrowseLink.find(:all, :select => "id,filename,tablename,catname")
       sitemap_products = SitemapProd.collect
-      fields = [:product_id, :filename, :sold]
+      fields = [:product_id, :special_browse_id, :special_browse_name, :sold]
       data = []
       sitemap_products.each do |prod|
+        #puts "Product : #{prod.inspect}"
         product_id = products[prod.code]
-        names = filenames.select{|f| f.filename if f.tablename == prod.filename.split('_')[0] and f.catname.to_s == prod.filename.split('_')[1].to_s}.collect(&:filename) unless product_id.nil?
+        names = special_browse.select{|f| f if f.tablename == prod.filename.split('_')[0] and f.catname.to_s == prod.filename.split('_')[1].to_s} unless product_id.nil?
         unless names.blank?
-          names.each do |name|
-            data << [product_id, name, prod.sold]
+          names.each do |n|
+            data << [product_id, n.id, n.filename, prod.sold]
           end
         end
       end
