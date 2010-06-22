@@ -8,6 +8,10 @@ $logger=Logger.new('product_migrator_err.log')
 
 $articles_log = Logger.new("articles.log")
 $articlelinks_log = Logger.new("articlelinks.log")
+$site_reviews_log = Logger.new("site_review.log")
+$product_reviews_log = Logger.new("product_review.log")
+$article_reviews_log = Logger.new("article_review.log")
+
 ARTICLE_FILE_PATH = "/home/suri/exotic_india/articlebodies/"
 
 
@@ -74,6 +78,22 @@ end
 class RingDisplay < ActiveRecord::Base
     set_table_name "ringdisplay"
 end
+
+class SpecialBrowseLinkNew < ActiveRecord::Base
+    set_table_name "specialbrowse_links_new"
+    def self.migrate_specialbrowse
+    	self.find(:all).each do |sp_browse|
+		meta_generator = MetaGenerator.find(:first,:conditions=>['category=? and tablename=?',sp_browse.catname,sp_browse.tablename])
+                sub_category = Subcategory.find(:first,:conditions=>['name=?',meta_generator.categoryname.strip])
+		unless sub_category.blank?                
+  			sp_browse.subcategory_id = sub_category.id
+			sp_browse.save 
+                        puts sp_browse.id
+		end
+        end
+    end
+end
+
 
 class SubcategoryAttributeLabel < ActiveRecord::Base
     set_table_name "subcategories_attribute_labels"
@@ -470,7 +490,409 @@ class NewArticlelinks < ActiveRecord::Base
 end
 
 
+class Feedback < ActiveRecord::Base
+  set_table_name "feedback"
+  
+  def self.collect(options = {})
+    find(:all, options)
+  end
 
+end
+
+class NewFeedBack < ActiveRecord::Base
+  set_table_name "feedback_new"
+ 
+ def self.migrate_site_feeback
+  Feedback.collect(:conditions=>['pagetype in (?)',["general"]]).each do |general_feedback|
+     general_review = self.new(
+                                       :comments=>general_feedback.comments,
+                                       :name=>general_feedback.name,
+                                       :email=>general_feedback.email,
+                                       :display_name=>general_feedback.showname,
+                                       :display_email_address=>general_feedback.showmail,
+                                       :date_added=>general_feedback.date_added,
+                                       :coltime=>general_feedback.coltime,
+                                       :pagetype=>general_feedback.pagetype
+                                     ) 
+      begin
+        general_review.save!
+      rescue Exception => e
+        $site_reviews_log.error("General Feedback with previous id #{general_feedback.id} not saved. Error:#{e}")
+      end 
+   end 
+ end
+end
+
+class ArticleReview< ActiveRecord::Base
+  set_table_name "article_reviews"
+
+ def self.migrate_article_reviews
+  articles ={}
+  NewArticles.collect(:select => "id,URL").collect{|a| articles[a.URL.strip] = a.id}   
+  Feedback.collect(:conditions=>['pagetype in (?)',["article","articles"]]).each do |article_feedback|
+     article_review = self.new(
+                                       :article_id=>articles[article_feedback.articlename.strip.gsub(".htm","")+".htm"],
+                                       :comments=>article_feedback.comments,
+                                       :name=>article_feedback.name,
+                                       :email=>article_feedback.email,
+                                       :display_name=>article_feedback.showname,
+                                       :display_email_address=>article_feedback.showmail,
+                                       :date_added=>article_feedback.date_added,
+                                       :coltime=>article_feedback.coltime,
+                                       :pagetype=>article_feedback.pagetype
+                                     ) 
+      begin
+        article_review.save!
+      rescue Exception => e
+        $article_reviews_log.error("Article Feedback with previous id #{article_feedback.id} not saved. Error:#{e}")
+      end 
+   end 
+ end
+  
+end
+
+class  ProductReview< ActiveRecord::Base
+  set_table_name "product_reviews"
+
+ def self.migrate_product_reviews
+  Feedback.collect(:conditions=>['pagetype in (?)',["product","book"]]).each do |product_feedback|
+     product_review = self.new(
+                                       :product_id=>NewProduct.find(:first,:conditions=>['code=?',product_feedback.articlename.strip],:select=>'id').id,
+                                       :comments=>product_feedback.comments,
+                                       :name=>product_feedback.name,
+                                       :email=>product_feedback.email,
+                                       :display_name=>product_feedback.showname,
+                                       :display_email_address=>product_feedback.showmail,
+                                       :date_added=>product_feedback.date_added,
+                                       :coltime=>product_feedback.coltime,
+                                       :pagetype=>product_feedback.pagetype
+                                     ) 
+      begin
+        product_review.save!
+      rescue Exception => e
+        $product_reviews_log.error("Product Feedback with previous id #{product_feedback.id} not saved. Error:#{e}")
+      end 
+   end 
+ end
+
+
+end
+
+#for user migration
+class DiscountTable < ActiveRecord::Base
+    set_table_name "discounttable"
+    set_primary_key "login"
+     
+   def self.collect(options = {})
+    	find(:all, options)
+    end
+
+   def self.sql_finder(query)
+ 
+
+      self.find_by_sql(query)
+   end
+
+   def self.migrate_discount_table
+     distinct_users = self.find(:all,:group=>['email, wholesaler'],:order=>'email')
+     distinct_users.each do |u|
+       customers=Customer.find(:all,:conditions=>['email=?',u.email])
+       buy = customers.blank? ? 0 : 1
+       user=User.migrate_user(u,buy)
+       user.save
+       puts "User id: #{user.id}"
+       unless customers.blank?
+		     customers.each do |cus|
+		         address=UserAddress.migrate_address(u,user.id,cus)
+             address.save
+             puts "Address id: #{address.id}"
+		     end
+       end
+     end
+   end
+   
+end
+
+class Customer< ActiveRecord::Base
+    set_table_name "customers"
+    #set_primary_key "userid"
+     
+   def self.collect(options = {})
+    	find(:all, options)
+   end
+
+   def self.sql_finder(options = {})
+      self.find_by_sql()
+   end
+   
+   def self.migrate_non_registered_user
+      arr=[]
+      DiscountTable.find(:all, :select=>'email').each{|disc| arr << disc.email unless disc.email.blank? }
+      Customer.find(:all, :conditions=>['email not in (?)',arr]).each do |customer|
+        user=User.migrate_non_registered_user(customer)
+        user.save
+        puts "Non registered user id: #{user.id}"
+        user_address = UserAddress.migrate_non_registered_user(user.id,customer)
+        user_address.save
+        puts "Non registered user address id; #{user_address.id}"
+      end
+   end
+    
+end
+
+
+class  User< ActiveRecord::Base
+    set_table_name "users"
+     
+    def self.collect(options = {})
+    	find(:all, options)
+    end
+
+    def self.migrate_user(user,buy)
+        self.new(
+                         :login=>user.login,
+                         :email=>user.email,
+                         :discount=>user.discount,
+                         :registered=>1,
+                         :buy=>buy,
+                         :wholesaler=>user.wholesaler,
+                         :specialbuyer=>user.specialbuyer,
+                         :firsttime=>user.firsttime,
+                         :bulk=>user.bulk,
+                         :threshold=>user.threshold,
+                         :dateofexpiry=>user.dateofexpiry,
+                         :items_of_interest=>user.items_of_interest,
+                         :requirements=>user.requirements,
+                         :comments=>user.comments,
+                         :volume=>user.volume,
+                         :credit=>user.credit,
+                         :coltime=>user.coltime
+                       )
+      
+    end
+ 
+   def self.migrate_non_registered_user(customer)
+        self.new(
+                         #:login=>user.login,
+                         :email=>customer.email,
+                         #:discount=>user.discount,
+                         :registered=>0,
+                         :buy=>1,
+                         :wholesaler=>0,
+                         #:specialbuyer=>user.specialbuyer,
+                         #:firsttime=>user.firsttime,
+                         #:bulk=>user.bulk,
+                         #:threshold=>user.threshold,
+                         #:dateofexpiry=>user.dateofexpiry,
+                         #:items_of_interest=>user.items_of_interest,
+                         #:requirements=>user.requirements,
+                         #:comments=>user.comments,
+                         #:volume=>user.volume,
+                         #:credit=>user.credit,
+                         :coltime=>customer.coltime
+                  )
+   
+   end
+
+=begin
+   def self.migrate_register_user_who_has_also_bought
+
+   
+   registered_bought_users = ActiveRecord::Base.connection.execute("select disc.login,
+                                                                               disc.email,
+                                                                               disc.discount,
+                                                                               disc.wholesaler,
+                                                                               disc.specialbuyer,
+                                                                               disc.firsttime,
+                                                                               disc.bulk,
+                                                                               disc.threshold,
+                                                                               disc.dateofexpiry,
+                                                                               disc.items_of_interest,
+                                                                               disc.requirements,
+                                                                               disc.comments,
+                                                                               disc.volume,
+                                                                               disc.credit,
+                                                                               disc.coltime,
+                                                                               disc.name,
+                                                                               disc.lname,
+                                                                               disc.company_name,
+                                                                               disc.address1,
+                                                                               disc.city,
+                                                                               disc.state,
+                                                                               disc.zip,
+                                                                               disc.country,
+                                                                               disc.phone,
+                                                                               disc.fax,
+                                                                               cus.ship_to_first_name,
+                                                                               cus.ship_to_last_name,
+                                                                               cus.ship_to_company,
+                                                                               cus.ship_to_address1,
+                                                                               cus.ship_to_city,
+                                                                               cus.ship_to_state,
+                                                                               cus.ship_to_zip,
+                                                                               cus.ship_to_country,
+                                                                               cus.ship_to_phone,
+                                                                               cus.ship_to_fax,
+                                                                               cus.ship_to_email,
+                                                                               cus.ship_to_address2,
+                                                                               disc.address2,
+                                                                               cus.checkout,
+                                                                               cus.carddet,
+                                                                               disc.coltime,
+                                                                               cus.userid
+                                                                               from discounttable as disc INNER JOIN customers as cus using(email);"
+								)
+
+       registered_bought_users.each do |row|
+         UserAddress.transaction do
+          user=self.new(
+                         :login=>row[0],
+                         :email=>row[1],
+                         :discount=>row[2],
+                         :registered=>1,
+                         :buy=>1,
+                         :wholesaler=>row[3],
+                         :specialbuyer=>row[4],
+                         :firsttime=>row[5],
+                         :bulk=>row[6],
+                         :threshold=>row[7],
+                         :dateofexpiry=>row[8],
+                         :items_of_interest=>row[9],
+                         :requirements=>row[10],
+                         :comments=>row[11],
+                         :volume=>row[12],
+                         :credit=>row[13],
+                         :coltime=>row[14]
+                       )
+              user.save!
+              puts user.id
+              user_address = UserAddress.migrate_registerd_user(row,user.id)
+              user_address.save!
+              puts user_address.id
+            end
+ 
+      
+       end
+     
+   end
+=end
+
+end
+
+class UserAddress< ActiveRecord::Base
+    set_table_name "user_address"
+     
+    def self.collect(options = {})
+    	find(:all, options)
+    end
+
+    def self.migrate_address(user,user_id,customer)
+      self.new(
+                                :user_id=>user_id,
+                                :first_name=>user.name || customer.first_name,
+                                :last_name=>user.lname || customer.last_name,
+                                :company=> user.company_name || customer.company,
+                                :address1=>user.address1 || customer.address1,
+                                :city=>user.city || customer.city,
+                                :state=>user.state || customer.state,
+                                :zip=>user.zip || customer.zip,
+                                :country=>user.country || customer.country,
+                                :phone=>user.phone || customer.phone,
+                                :fax=>user.fax || customer.fax,
+                                :ship_to_first_name=>customer.ship_to_first_name,
+                                :ship_to_last_name=>customer.ship_to_last_name,
+                                :ship_to_company=>customer.ship_to_company,
+                                :ship_to_address1=>customer.ship_to_address1,
+                                :ship_to_city=>customer.ship_to_city,
+                                :ship_to_state=>customer.ship_to_state,
+                                :ship_to_zip=>customer.ship_to_zip,
+                                :ship_to_country=>customer.ship_to_country,
+                                :ship_to_phone=>customer.ship_to_phone,
+                                :ship_to_fax=>customer.ship_to_fax,
+                                :ship_to_email=>customer.ship_to_email,
+                                :ship_to_address2=>customer.ship_to_address2,
+                                :address2=>user.address2 || customer.address2,
+                                :checkout=>customer.checkout,
+                                :carddet=>customer.carddet,
+                                :coltime=>customer.coltime,
+                                :userid=>customer.userid
+        ) 
+       
+    end
+
+   def self.migrate_non_registered_user(user_id,customer)
+      self.new(
+                                :user_id=>user_id,
+                                :first_name=>customer.first_name,
+                                :last_name=>customer.last_name,
+                                :company=> customer.company,
+                                :address1=>customer.address1,
+                                :city=>customer.city,
+                                :state=>customer.state,
+                                :zip=>customer.zip,
+                                :country=>customer.country,
+                                :phone=>customer.phone,
+                                :fax=>customer.fax,
+                                :ship_to_first_name=>customer.ship_to_first_name,
+                                :ship_to_last_name=>customer.ship_to_last_name,
+                                :ship_to_company=>customer.ship_to_company,
+                                :ship_to_address1=>customer.ship_to_address1,
+                                :ship_to_city=>customer.ship_to_city,
+                                :ship_to_state=>customer.ship_to_state,
+                                :ship_to_zip=>customer.ship_to_zip,
+                                :ship_to_country=>customer.ship_to_country,
+                                :ship_to_phone=>customer.ship_to_phone,
+                                :ship_to_fax=>customer.ship_to_fax,
+                                :ship_to_email=>customer.ship_to_email,
+                                :ship_to_address2=>customer.ship_to_address2,
+                                :address2=>customer.address2,
+                                :checkout=>customer.checkout,
+                                :carddet=>customer.carddet,
+                                :coltime=>customer.coltime,
+                                :userid=>customer.userid
+        ) 
+      
+   
+   end
+
+=begin
+    def self.migrate_registerd_user(row,user_id)
+       self.new(
+                                :user_id=>user_id,
+                                :first_name=>row[15],
+                                :last_name=>row[16],
+                                :company=>row[17],
+                                :address1=>row[18],
+                                :city=>row[19],
+                                :state=>row[20],
+                                :zip=>row[21],
+                                :country=>row[22],
+                                :phone=>row[23],
+                                :fax=>row[24],
+                                :ship_to_first_name=>row[25],
+                                :ship_to_last_name=>row[26],
+                                :ship_to_company=>row[27],
+                                :ship_to_address1=>row[28],
+                                :ship_to_city=>row[29],
+                                :ship_to_state=>row[30],
+                                :ship_to_zip=>row[31],
+                                :ship_to_country=>row[32],
+                                :ship_to_phone=>row[33],
+                                :ship_to_fax=>row[34],
+                                :ship_to_email=>row[35],
+                                :ship_to_address2=>row[36],
+                                :address2=>row[37],
+                                :checkout=>row[38],
+                                :carddet=>row[39],
+                                :coltime=>row[40],
+                                :userid=>row[41]
+)
+    end
+=end
+end
+
+
+#end of user migration
 
 
 
