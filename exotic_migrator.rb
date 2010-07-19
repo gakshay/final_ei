@@ -357,17 +357,16 @@ class Subcategory < ActiveRecord::Base
    end
 end
 
-# to populate special browse links new
 class SpecialBrowseLink < ActiveRecord::Base
   set_table_name "specialbrowse_links"
 
   def self.migrate_specialbrowse
   	self.find(:all).each do |sp_browse|
 		  meta_generator = MetaGenerator.find(:first,:conditions=>['category=? and tablename=?',sp_browse.catname,sp_browse.tablename])
-		  category = Category.find(:first, :conditions => ["name = ?", meta_generator.tablename.strip], :select => "id")
+		  category = Category.find(:first, :conditions => ["name = ?", sp_browse.tablename.strip], :select => "id")
 			sub_category = Subcategory.find(:first,:conditions=>['name = ? and category_id = ?',meta_generator.categoryname.strip, category.id])
 		  unless sub_category.blank?                
-		  	SpecialBrowseLinkNew.create(:filename => sp_browse.filename,
+		  	sp = SpecialBrowseLinkNew.new(:filename => sp_browse.filename,
 																:subcategory_id => sub_category.id,
 																:dropdownonly => sp_browse.dropdownonly,
 																:artists => sp_browse.artists,
@@ -386,10 +385,23 @@ class SpecialBrowseLink < ActiveRecord::Base
 																:specials_exclflds => sp_browse.specials_exclflds,
 																:specials_modifier => sp_browse.specials_modifier,
 																:specials_extra_words => sp_browse.specials_extra_words)
+				sp.id = sp_browse.id
+				sp.save!
+			else
+				puts sp_browse.id
 			end
 		end
 		puts "done"
   end
+end
+
+
+# to populate special browse links new
+class SpecialBrowseLink < ActiveRecord::Base
+  set_table_name "specialbrowse_links"
+    def self.collect(options = {})
+    	find(:all, options)
+    end
 end
 
 class SpecialBrowseLinkNew < ActiveRecord::Base
