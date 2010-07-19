@@ -299,49 +299,77 @@ class Subcategory < ActiveRecord::Base
    def self.sub_categories_migrator
         MetaGenerator.collect(:conditions=>['category>0']).each do |sub_category|
             begin
-		subcategory = self.new(
-	                              :name=>sub_category.categoryname.strip,
-				      :description=>sub_category.description,
-			              :title=>sub_category.title,
+        subcategory = self.new(
+                                  :name=>sub_category.categoryname.strip,
+                      :description=>sub_category.description,
+                          :title=>sub_category.title,
                                       :previous_id=>sub_category.id,
                                       :category_id=>MAIN_CATEGORIES[sub_category.tablename.strip.to_sym]  
-		                   )
+                           )
                 category_name = sub_category.categoryname.gsub(" ","_").downcase.to_sym
 
                 case(sub_category.tablename.strip)
-  		        when 'beads'
-                        	subcategory.id = BEAD_SUBCATEGORIES[category_name]
-			when 'book'
-                        	subcategory.id = BOOK_SUBCATEGORIES[category_name]
-			when 'audiovideo'
-                        	subcategory.id = AUDIO_VIDEO_SUBCATEGORIES[category_name]
-			when 'ayurveda'
-                        	subcategory.id = AYURVEDA_SUBCATEGORIES[category_name]
-			when 'paintings'
-                        	subcategory.id = PAINTING_SUBCATEGORIES[category_name]
-			when 'sculptures'
-                        	subcategory.id = SCULPTURE_SUBCATEGORIES[category_name]
-			when 'jewelry'
-                        	subcategory.id = JEWELRY_SUBCATEGORIES[category_name]
-			when 'textiles'
-                        	subcategory.id = TEXTILE_SUBCATEGORIES[category_name]
-		end
+                  when 'beads'
+                            subcategory.id = BEAD_SUBCATEGORIES[category_name] || raise
+            when 'book'
+                            subcategory.id = BOOK_SUBCATEGORIES[category_name] || raise
+            when 'audiovideo'
+                            subcategory.id = AUDIO_VIDEO_SUBCATEGORIES[category_name] || raise
+            when 'ayurveda'
+                            subcategory.id = AYURVEDA_SUBCATEGORIES[category_name] || raise
+            when 'paintings'
+                            subcategory.id = PAINTING_SUBCATEGORIES[category_name] || raise
+            when 'sculptures'
+                            subcategory.id = SCULPTURE_SUBCATEGORIES[category_name] || raise
+            when 'jewelry'
+                            subcategory.id = JEWELRY_SUBCATEGORIES[category_name] || raise
+            when 'textiles'
+                            subcategory.id = TEXTILE_SUBCATEGORIES[category_name] || raise
+            else
+                 raise
+        end
                subcategory.save!
                 puts "#{subcategory.id} #{subcategory.name}"
              rescue Exception=>e
                puts(e)
-	    end	
-	end
+        end    
+    end
    end
-
 end
 
+# to populate special browse links new
 class SpecialBrowseLink < ActiveRecord::Base
-    set_table_name "specialbrowse_links"
+  set_table_name "specialbrowse_links"
 
-    def self.collect(options = {})
-    	find(:all, options)
-    end
+  def self.migrate_specialbrowse
+  	self.find(:all).each do |sp_browse|
+		  meta_generator = MetaGenerator.find(:first,:conditions=>['category=? and tablename=?',sp_browse.catname,sp_browse.tablename])
+		  category = Category.find(:first, :conditions => ["name = ?", meta_generator.tablename.strip], :select => "id")
+			sub_category = Subcategory.find(:first,:conditions=>['name = ? and category_id = ?',meta_generator.categoryname.strip, category.id])
+		  unless sub_category.blank?                
+		  	SpecialBrowseLinkNew.create(:filename => sp_browse.filename,
+																:subcategory_id => sub_category.id,
+																:dropdownonly => sp_browse.dropdownonly,
+																:artists => sp_browse.artists,
+																:iscolor => sp_browse.iscolor,
+																:available => sp_browse.available,
+																:coltime => sp_browse.coltime,
+																:keyword => sp_browse.coltime,
+																:description => sp_browse.description,
+																:titletag  => sp_browse.titletag,
+																:buttontext => sp_browse.buttontext,
+																:buttoncolor => sp_browse.buttoncolor,
+																:specials_nocat => sp_browse.specials_nocat,
+																:specials_mustorcat => sp_browse.specials_mustorcat,
+																:specials_mustandcat => sp_browse.specials_mustandcat,
+																:specials_wt => sp_browse.specials_wt,
+																:specials_exclflds => sp_browse.specials_exclflds,
+																:specials_modifier => sp_browse.specials_modifier,
+																:specials_extra_words => sp_browse.specials_extra_words)
+			end
+		end
+		puts "done"
+  end
 end
 
 class SpecialBrowseLinkNew < ActiveRecord::Base
@@ -354,7 +382,8 @@ class SpecialBrowseLinkNew < ActiveRecord::Base
     def self.migrate_specialbrowse
       self.find(:all).each do |sp_browse|
 		    meta_generator = MetaGenerator.find(:first,:conditions=>['category=? and tablename=?',sp_browse.catname,sp_browse.tablename])
-		    sub_category = Subcategory.find(:first,:conditions=>['name=?',meta_generator.categoryname.strip])
+		    cat_id = Category.find(:first, :conditions => ["name = ?", meta_generator.tablename.strip], :select => "id").id
+		    sub_category = Subcategory.find(:first,:conditions=>['name = ? and category_id = ?',meta_generator.categoryname.strip, cat_id])
 		    unless sub_category.blank?                
 					sp_browse.subcategory_id = sub_category.id
 					sp_browse.save 
