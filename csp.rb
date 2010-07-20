@@ -2,93 +2,126 @@ require 'rubygems'
 require 'pp'
 require 'active_record'
 require 'logger'
-require 'exotic_migrator'
 require 'ar-extensions'
+require 'exotic_scrapping'
 
-SITEMAP_FILE_PATH = "/home/akshay/Documents/exotic_india/sitemap/"
+$log = Logger.new('server.log')
+
+FILE_PATH = "/home/akshay/Projects/final_ei/url.txt"
 ActiveRecord::Base.establish_connection(
   						:adapter  =>  "mysql",
   						:host  =>  "localhost",
    					  :username  =>  "root",
-    					:database  =>  "mansur"
+    					:database  =>  "clearsenses_v2"
 )
-# models
-class CSP < ActiveRecord::Base
-  set_table_name :sitemap_products
 
-  def self.collect
-    find(:all, :select => "code,filename,sold", :limit => 100000, :offset => 100000)
-  end
-
-  def self.run
-    prod_files = get_prod_files
-    puts "Total Product Files: #{prod_files.length}"
-    read_and_insert_prods(prod_files,0)
-    
-    sold_prod_files = get_sold_prod_files
-    puts "Total Sold Product Files: #{prod_files.length}"
-    read_and_insert_prods(sold_prod_files,1)
-  end
-
-  def self.get_prod_files
-    files = `cd #{SITEMAP_FILE_PATH}; ls *.prods`
-    files.split(/\n/)
-  end
-
-  def self.get_sold_prod_files
-    files = `cd #{SITEMAP_FILE_PATH}; ls *.soldprods`
-    files.split(/\n/)
-  end
-
-  def self.read_and_insert_prods(files, sold)
-    fields = [:code, :filename, :sold]
-    data = []
-    
-    files.each_with_index do |file, i|
-      puts "reading #{file}"
-      f = File.open("#{SITEMAP_FILE_PATH}#{file}", "r").read
-      skus = f.scan(/:\w+\d+\n/).collect{|a| a.gsub(/(:|\n)/,"")}
-      skus.each do |sku|
-        data << SitemapProd.new(:code=>sku, :filename=>file.split(".")[0], :sold=>sold)
+#migration
+class CreateProductSpecialSubcategory < ActiveRecord::Migration
+    def self.up
+      create_table :products_special_subcategories, :id => false do |t|
+        t.string :product_id
+        t.string :special_subcategory_id
+        t.timestamps
       end
     end
-    puts "data length" + data.length.to_s
-    @options = {:validate => false} 
-    ActiveRecord::Base.transaction do
-      SitemapProd.import data, @options
+
+    def self.down
+      drop_table :sitemap_products
     end
-    puts "done"
-  end
 end
 
-class SitemapSpecialSubcategory < ActiveRecord::Base
-  set_table_name :sitemap_special_subcategories
+# uncomment this line if you want to migrate
 
-  def self.run
-    products = {}
-    NewProduct.collect(:select => "id,code").collect{|p| products[p.code] = p.id}
-    puts "Products length: " + products.length.to_s
-    special_browse = SpecialBrowseLink.find(:all, :select => "id,filename,tablename,catname")
-    sitemap_products = SitemapProd.collect
-    fields = [:product_id, :special_browse_id, :special_browse_name, :sold]
-    data = []
-    sitemap_products.each do |prod|
-      #puts "Product : #{prod.inspect}"
-      product_id = products[prod.code]
-      names = special_browse.select{|f| f if f.tablename == prod.filename.split('_')[0] and f.catname.to_s == prod.filename.split('_')[1].to_s} unless product_id.nil?
-      unless names.blank?
-        names.each do |n|
-          data << [product_id, n.id, n.filename, prod.sold]
+#CreateProductSpecialSubcategory.up
+
+# models
+class Product < ActiveRecord::Base
+    set_table_name "product"
+    belongs_to :category
+    has_and_belongs_to_many :subcategories, :join_table => "product_subcategories"
+    has_and_belongs_to_many :special_subcategories, :join_table => "products_special_subcategories"
+end
+
+class Category < ActiveRecord::Base
+   has_many :subcategories, :dependent=> :destroy
+   has_many :new_products
+end
+
+class Subcategory < ActiveRecord::Base
+   belongs_to :category
+   has_and_belongs_to_many :products, :join_table => "product_subcategories"
+   has_many :special_subcategories
+end
+
+class SpecialSubcategory < ActiveRecord::Base
+   set_table_name :specialbrowse_links_new
+   belongs_to :subcategory
+   has_and_belongs_to_many :products, :join_table => "products_special_subcategories"
+end
+
+#script
+class ProductSpecialSubcategory 
+  def initialize
+    @products = {}
+    Product.find(:all, :select => "id, code").collect{|a| @products[a.code] = a.id }
+    @categories = {}
+    Category.find(:all, :select => "id, name").collect{|a| @categories[a.name] = a.id }
+    @sub_categories = {}
+    Subcategory.find(:all, :select => "id, name, category_id").collect{|a| @sub_categories["#{a.name.gsub(/\s/,'')}_#{a.category_id}"] = a.id }
+    @special_subcategories = {}
+    SpecialSubcategory.find(:all, :select => "id, filename, subcategory_id").collect{|a| @special_subcategories["#{a.filename.gsub(/\s/,'')}_#{a.subcategory_id}"] = a.id }
+    @file = File.open(FILE_PATH, "r")
+    @robot = ExoticScapping.new
+  end
+  
+  def populate
+    File.open(FILE_PATH, "r") do |line|
+      while (data = line.gets)
+        $log.info("***********#{data}********")
+        link, c, s, p = separate_csp(data)
+        $log.debug("link: #{link}, C: #{c}, S: #{s}, P: #{p}")
+        skus = @robot.fetch(link)
+        unless skus.blank?
+          $log.debug("SKUS: #{skus.join(", ")}")
+          products = read_products_from_sku(skus)
+          $log.debug("Products found: #{products.collect(&:id).join(", ")}")
+          special_subcategory = get_special_subcategory(c,s,p)
+          $log.debug("Special Subcategory: #{special_subcategory.id}")
+          special_subcategory.products << products unless special_subcategory.blank?
         end
       end
     end
-    puts "data length" + data.length.to_s
-    unless data.empty?
-      @options = {:validate => false} 
-      ActiveRecord::Base.transaction do
-        SitemapSpecialSubcategory.import fields, data, @options
-      end
+  end
+
+  def separate_csp(data)
+    data = data.split(/\s/)
+    link = data[0]
+    invalue = link.gsub("http://exoticindia.com/","").split(/\//)
+    c = invalue[data.index("C")-1] rescue nil
+    s = invalue[data.index("S")-1] rescue nil
+    p = invalue[data.index("P")-1] rescue nil
+    return link + "xmllist", c, s, p 
+  end
+
+  def read_products_from_sku(skus)
+    ids = []
+    skus.each do |sku|
+      ids  << @products[sku]
     end
-    return true
+    products = Product.find(:all, :conditions => ['id in (?)', ids.compact])
+    return products
+  end
+
+  def get_special_subcategory(c,s,p)
+    category_id = @categories[c]
+    $log.debug("Category id : #{category_id}")
+    subcategory_id = @sub_categories["#{s}_#{category_id}"]
+    $log.debug("Sub Category id : #{subcategory_id}")
+    ssid = @special_subcategories["#{p}_#{subcategory_id}"]
+    special_subcategory = SpecialSubcategory.find_by_id ssid
+    return special_subcategory
   end
 end
+
+p = ProductSpecialSubcategory.new
+p.populate

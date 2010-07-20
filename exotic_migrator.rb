@@ -964,7 +964,7 @@ PAINTING_SUBCATEGORIES={
 				:thangka=>111,
 				:wildlife=>112,
 				:tanjore=>113
-  		       }
+  		  }
 
 SCULPTURE_SUBCATEGORIES={
 				:brass=>201,
