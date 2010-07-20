@@ -1,62 +1,29 @@
 require 'rubygems'
-require 'pp'
-require 'active_record'
-require 'logger'
-require 'ar-extensions'
-require 'exotic_scrapping'
+require 'net/http'
+require 'uri'
+require 'exotic_models'
+
+HOST = "http://exoticindia.com"
+USERAGENT = "Mozilla/5.0 (X11; U; Linux x86_64; en-US) AppleWebKit/533.4 (KHTML, like Gecko) Chrome/5.0.375.99 Safari/533.4"
 
 $log = Logger.new('server.log')
 
 FILE_PATH = "/home/akshay/Projects/final_ei/url.txt"
-ActiveRecord::Base.establish_connection(
-  						:adapter  =>  "mysql",
-  						:host  =>  "localhost",
-   					  :username  =>  "root",
-    					:database  =>  "clearsenses_v2"
-)
 
-#migration
-class CreateProductSpecialSubcategory < ActiveRecord::Migration
-    def self.up
-      create_table :products_special_subcategories, :id => false do |t|
-        t.string :product_id
-        t.string :special_subcategory_id
-        t.timestamps
-      end
-    end
+class ExoticScapping
+	def initialize
+		@headers = {"Content-Type" => "text/html", "charset" => "utf-8", 'User-Agent' => USERAGENT}
+		url = URI.parse HOST 
+		@http = Net::HTTP.new(url.host, url.port)
+		resp, data = @http.get("/in", @headers)
+		@cookie = resp.response['set-cookie'].split("; ")[0]	
+	end 
 
-    def self.down
-      drop_table :sitemap_products
-    end
-end
-
-# uncomment this line if you want to migrate
-
-#CreateProductSpecialSubcategory.up
-
-# models
-class Product < ActiveRecord::Base
-    set_table_name "product"
-    belongs_to :category
-    has_and_belongs_to_many :subcategories, :join_table => "product_subcategories"
-    has_and_belongs_to_many :special_subcategories, :join_table => "products_special_subcategories"
-end
-
-class Category < ActiveRecord::Base
-   has_many :subcategories, :dependent=> :destroy
-   has_many :new_products
-end
-
-class Subcategory < ActiveRecord::Base
-   belongs_to :category
-   has_and_belongs_to_many :products, :join_table => "product_subcategories"
-   has_many :special_subcategories
-end
-
-class SpecialSubcategory < ActiveRecord::Base
-   set_table_name :specialbrowse_links_new
-   belongs_to :subcategory
-   has_and_belongs_to_many :products, :join_table => "products_special_subcategories"
+	def fetch (url)
+	  path = url.gsub(HOST,"")
+		resp, data = @http.get(path, @headers.merge('Cookie' => @cookie))
+		return data.split(/\n/)
+	end
 end
 
 #script

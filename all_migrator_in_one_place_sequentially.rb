@@ -21,7 +21,7 @@ while(i<product_count)
 end
 
 
-SpecialBrowseLinkNew.migrate_specialbrowse
+SpecialBrowseLink.migrate_specialbrowse
 
 ProductAttr.migrate_ring_sizes
 

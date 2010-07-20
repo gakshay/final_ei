@@ -320,12 +320,12 @@ class Subcategory < ActiveRecord::Base
         MetaGenerator.collect(:conditions=>['category>0']).each do |sub_category|
             begin
         subcategory = self.new(
-                                  :name=>sub_category.categoryname.strip,
-                      :description=>sub_category.description,
-                          :title=>sub_category.title,
-                                      :previous_id=>sub_category.id,
-                                      :category_id=>MAIN_CATEGORIES[sub_category.tablename.strip.to_sym]  
-                           )
+															:name=>sub_category.categoryname.strip,
+															:description=>sub_category.description,
+															:title=>sub_category.title,
+															:previous_id=>sub_category.id,
+															:category_id=>MAIN_CATEGORIES[sub_category.tablename.strip.to_sym]  
+                           		)
                 category_name = sub_category.categoryname.gsub(" ","_").downcase.to_sym
 
                 case(sub_category.tablename.strip)
@@ -357,8 +357,12 @@ class Subcategory < ActiveRecord::Base
    end
 end
 
+# to populate special browse links new
 class SpecialBrowseLink < ActiveRecord::Base
   set_table_name "specialbrowse_links"
+    def self.collect(options = {})
+    	find(:all, options)
+    end
 
   def self.migrate_specialbrowse
   	self.find(:all).each do |sp_browse|
@@ -393,15 +397,6 @@ class SpecialBrowseLink < ActiveRecord::Base
 		end
 		puts "done"
   end
-end
-
-
-# to populate special browse links new
-class SpecialBrowseLink < ActiveRecord::Base
-  set_table_name "specialbrowse_links"
-    def self.collect(options = {})
-    	find(:all, options)
-    end
 end
 
 class SpecialBrowseLinkNew < ActiveRecord::Base
@@ -946,13 +941,13 @@ MAIN_CATEGORIES={
 			:book=>600,
 			:cds_dvds=>700,
 			:ayurveda=>800,
-                        :dolls=>900
+      :dolls=>900
 		}
 
 
 PAINTING_SUBCATEGORIES={
 				:batik=>101,
-				:folkart=>102,
+				:folk_art=>102,
 				:hindu=>103,
 				:large=>104,
 				:marble=>105,
@@ -962,7 +957,7 @@ PAINTING_SUBCATEGORIES={
 				:sikhart=>109,
 				:tantra=>110,
 				:thangka=>111,
-				:wildlife=>112,
+				:wild_life=>112,
 				:tanjore=>113
   		  }
 
