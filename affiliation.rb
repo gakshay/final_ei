@@ -118,10 +118,4 @@ module Affiliation
       puts "done"
 	  end
 	end #affiliate
-
-
-	
 end # Affiliation 
-Affiliation::CreateNewAffiliate.down
-Affiliation::CreateNewAffiliate.up
-Affiliation::AffiliateNew.migrate_affiliate

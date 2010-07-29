@@ -26,12 +26,10 @@ class CreateProductSpecialSubcategory < ActiveRecord::Migration
     end
 end
 
-# uncomment this line if you want to migrate
-#CreateProductSpecialSubcategory.up
-
 # models
 class Product < ActiveRecord::Base
     set_table_name "product"
+    set_primary_key "id"
     belongs_to :category
     has_and_belongs_to_many :subcategories, :join_table => "product_subcategories"
     has_and_belongs_to_many :special_subcategories, :join_table => "products_special_subcategories"
@@ -39,7 +37,7 @@ end
 
 class Category < ActiveRecord::Base
    has_many :subcategories, :dependent=> :destroy
-   has_many :new_products
+   has_many :products
 end
 
 class Subcategory < ActiveRecord::Base

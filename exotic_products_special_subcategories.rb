@@ -30,13 +30,13 @@ end
 class ProductSpecialSubcategory 
   def initialize
     @products = {}
-    Product.find(:all, :select => "id, code").collect{|a| @products[a.code] = a.id }
+    products = Product.find(:all, :select => "id, code").each{|pro| @products[pro.code] = pro.id }
     @categories = {}
-    Category.find(:all, :select => "id, name").collect{|a| @categories[a.name] = a.id }
+    Category.find(:all, :select => "id, name").each{|a| @categories[a.name] = a.id }
     @sub_categories = {}
-    Subcategory.find(:all, :select => "id, name, category_id").collect{|a| @sub_categories["#{a.name.gsub(/\s/,'')}_#{a.category_id}"] = a.id }
+    Subcategory.find(:all, :select => "id, name, category_id").each{|a| @sub_categories["#{a.name.gsub(/\s/,'')}_#{a.category_id}"] = a.id }
     @special_subcategories = {}
-    SpecialSubcategory.find(:all, :select => "id, filename, subcategory_id").collect{|a| @special_subcategories["#{a.filename.gsub(/\s/,'')}_#{a.subcategory_id}"] = a.id }
+    SpecialSubcategory.find(:all, :select => "id, filename, subcategory_id").each{|a| @special_subcategories["#{a.filename.gsub(/\s/,'')}_#{a.subcategory_id}"] = a.id }
     @file = File.open(FILE_PATH, "r")
     @robot = ExoticScapping.new
   end
@@ -44,9 +44,8 @@ class ProductSpecialSubcategory
   def populate
     File.open(FILE_PATH, "r") do |line|
       while (data = line.gets)
-        $log.info("***********#{data}********")
+        $log.info("***********#{data}")
         link, c, s, p = separate_csp(data)
-        $log.debug("link: #{link}, C: #{c}, S: #{s}, P: #{p}")
         skus = @robot.fetch(link)
         unless skus.blank?
           $log.debug("SKUS: #{skus.join(", ")}")
@@ -90,5 +89,4 @@ class ProductSpecialSubcategory
   end
 end
 
-p = ProductSpecialSubcategory.new
-p.populate
+

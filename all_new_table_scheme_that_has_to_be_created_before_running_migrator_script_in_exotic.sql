@@ -34,7 +34,7 @@ CREATE TABLE `article_reviews` (
   `coltime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `pagetype` varchar(15) NOT NULL DEFAULT 'article',
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=4947 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -56,7 +56,7 @@ CREATE TABLE `articlelinks_new` (
   `name` varchar(200) DEFAULT NULL,
   `email` varchar(200) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=1891 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -81,7 +81,7 @@ CREATE TABLE `articles_new` (
   `coltime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `ticker` int(9) NOT NULL DEFAULT '100',
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=241 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -100,7 +100,7 @@ CREATE TABLE `categories` (
   `created_at` datetime DEFAULT NULL,
   `updated_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=601 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -121,7 +121,7 @@ CREATE TABLE `feedback_new` (
   `coltime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `pagetype` varchar(15) NOT NULL DEFAULT 'article',
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=141 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -139,7 +139,7 @@ CREATE TABLE `product_attr` (
   `quantity` int(11) DEFAULT NULL,
   `price` float DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=2752 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -161,7 +161,7 @@ CREATE TABLE `product_reviews` (
   `coltime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `pagetype` varchar(15) NOT NULL DEFAULT 'article',
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=4849 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -190,7 +190,7 @@ CREATE TABLE `new_products` (
   `material` text,
   `frame` varchar(255) NOT NULL DEFAULT '0',
   `availability` varchar(20) DEFAULT NULL,
-  `archive` tinyint(1) NOT NULL DEFAULT '0',
+  `archive` tinyint(1) DEFAULT '0',
   `sold` varchar(15) DEFAULT '0',
   `specialbuyer` tinyint(1) NOT NULL DEFAULT '0',
   `date_added` date DEFAULT NULL,
@@ -205,7 +205,7 @@ CREATE TABLE `new_products` (
   `edition` mediumint(9) DEFAULT NULL,
   `time` varchar(200) DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=220115 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -250,7 +250,7 @@ CREATE TABLE `specialbrowse_links_new` (
   `specials_modifier` varchar(10) DEFAULT NULL,
   `specials_extra_words` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=648 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -270,7 +270,7 @@ CREATE TABLE `subcategories` (
   `created_at` datetime DEFAULT NULL,
   `updated_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=650 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -294,7 +294,7 @@ CREATE TABLE `subcategories_attribute_labels` (
   `label9` varchar(100) DEFAULT NULL,
   `label10` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=8 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -318,87 +318,87 @@ CREATE TABLE `subcategories_attribute_values` (
   `value9` varchar(100) DEFAULT NULL,
   `value10` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=226 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `user_address`
 --
 
-DROP TABLE IF EXISTS `user_address`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `user_address` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `user_id` int(11) NOT NULL,
-  `userid` varchar(200) NOT NULL DEFAULT '',
-  `first_name` varchar(50) DEFAULT NULL,
-  `last_name` varchar(50) DEFAULT NULL,
-  `company` varchar(255) DEFAULT NULL,
-  `address1` text,
-  `city` varchar(100) DEFAULT NULL,
-  `state` varchar(100) DEFAULT NULL,
-  `zip` varchar(50) DEFAULT NULL,
-  `country` varchar(200) DEFAULT NULL,
-  `phone` varchar(50) DEFAULT NULL,
-  `fax` varchar(50) DEFAULT NULL,
-  `ship_to_first_name` varchar(50) DEFAULT NULL,
-  `ship_to_last_name` varchar(50) DEFAULT NULL,
-  `ship_to_company` varchar(255) DEFAULT NULL,
-  `ship_to_address1` text,
-  `ship_to_city` varchar(100) DEFAULT NULL,
-  `ship_to_state` varchar(100) DEFAULT NULL,
-  `ship_to_zip` varchar(50) DEFAULT NULL,
-  `ship_to_country` varchar(200) DEFAULT NULL,
-  `ship_to_phone` varchar(50) DEFAULT NULL,
-  `ship_to_fax` varchar(50) DEFAULT NULL,
-  `ship_to_email` varchar(200) DEFAULT NULL,
-  `ship_to_address2` text,
-  `address2` text,
-  `checkout` varchar(8) NOT NULL DEFAULT 'online',
-  `carddet` varchar(30) NOT NULL DEFAULT '-',
-  `coltime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=64791 DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
+--  DROP TABLE IF EXISTS `user_address`;
+--  /*!40101 SET @saved_cs_client     = @@character_set_client */;
+--  /*!40101 SET character_set_client = utf8 */;
+--  CREATE TABLE `user_address` (
+--  `id` int(11) NOT NULL AUTO_INCREMENT,
+--  `user_id` int(11) NOT NULL,
+--  `userid` varchar(200) NOT NULL DEFAULT '',
+--  `first_name` varchar(50) DEFAULT NULL,
+--  `last_name` varchar(50) DEFAULT NULL,
+--  `company` varchar(255) DEFAULT NULL,
+--  `address1` text,
+--  `city` varchar(100) DEFAULT NULL,
+--  `state` varchar(100) DEFAULT NULL,
+--  `zip` varchar(50) DEFAULT NULL,
+--  `country` varchar(200) DEFAULT NULL,
+--  `phone` varchar(50) DEFAULT NULL,
+--  `fax` varchar(50) DEFAULT NULL,
+--  `ship_to_first_name` varchar(50) DEFAULT NULL,
+--  `ship_to_last_name` varchar(50) DEFAULT NULL,
+--  `ship_to_company` varchar(255) DEFAULT NULL,
+--  `ship_to_address1` text,
+--  `ship_to_city` varchar(100) DEFAULT NULL,
+--  `ship_to_state` varchar(100) DEFAULT NULL,
+--  `ship_to_zip` varchar(50) DEFAULT NULL,
+--  `ship_to_country` varchar(200) DEFAULT NULL,
+--  `ship_to_phone` varchar(50) DEFAULT NULL,
+--  `ship_to_fax` varchar(50) DEFAULT NULL,
+--  `ship_to_email` varchar(200) DEFAULT NULL,
+--  `ship_to_address2` text,
+--  `address2` text,
+--  `checkout` varchar(8) NOT NULL DEFAULT 'online',
+--  `carddet` varchar(30) NOT NULL DEFAULT '-',
+--  `coltime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+--  PRIMARY KEY (`id`)
+--  ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+--  /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `users`
---
+----
+---- Table structure for table `users`
+----
 
-DROP TABLE IF EXISTS `users`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `users` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `login` varchar(80) NOT NULL DEFAULT '',
-  `email` varchar(200) DEFAULT NULL,
-  `discount` decimal(5,2) DEFAULT '0.00',
-  `registered` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `buy` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `wholesaler` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `specialbuyer` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `firsttime` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `bulk` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `threshold` int(5) DEFAULT '0',
-  `dateofexpiry` date DEFAULT '2004-01-05',
-  `items_of_interest` text,
-  `requirements` text,
-  `comments` text,
-  `volume` varchar(100) DEFAULT NULL,
-  `credit` decimal(10,2) NOT NULL DEFAULT '0.00',
-  `coltime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=74943 DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
-/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+--  DROP TABLE IF EXISTS `users`;
+--  /*!40101 SET @saved_cs_client     = @@character_set_client */;
+--  /*!40101 SET character_set_client = utf8 */;
+--  CREATE TABLE `users` (
+--  `id` int(11) NOT NULL AUTO_INCREMENT,
+--  `login` varchar(80) NOT NULL DEFAULT '',
+--  `email` varchar(200) DEFAULT NULL,
+--  `discount` decimal(5,2) DEFAULT '0.00',
+--  `registered` tinyint(3) unsigned NOT NULL DEFAULT '0',
+--  `buy` tinyint(3) unsigned NOT NULL DEFAULT '0',
+--  `wholesaler` tinyint(3) unsigned NOT NULL DEFAULT '0',
+--  `specialbuyer` tinyint(3) unsigned NOT NULL DEFAULT '0',
+--  `firsttime` tinyint(3) unsigned NOT NULL DEFAULT '0',
+--  `bulk` tinyint(3) unsigned NOT NULL DEFAULT '0',
+--  `threshold` int(5) DEFAULT '0',
+--  `dateofexpiry` date DEFAULT '2004-01-05',
+--  `items_of_interest` text,
+--  `requirements` text,
+--  `comments` text,
+--  `volume` varchar(100) DEFAULT NULL,
+--  `credit` decimal(10,2) NOT NULL DEFAULT '0.00',
+--  `coltime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+--  PRIMARY KEY (`id`)
+--  ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+--  *!40101 SET character_set_client = @saved_cs_client */;
+--  /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
-/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
-/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
-/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+--  /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+--  /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+--  /*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+--  /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+--  /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+--  /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+--  /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2010-07-19 16:28:06
+---- Dump completed on 2010-07-19 16:28:06
