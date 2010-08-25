@@ -197,8 +197,8 @@ end
 #puts "now running products migration script..."
 #jos_vm_product_migration
 
-puts "migrating jos article, webeeComment, product_type_3 schema..."
-system "mysql -u root clearsenses_v3 < jos_article_schema.sql"
+#puts "migrating jos article, webeeComment, product_type_3 schema..."
+#system "mysql -u root clearsenses_v3 < jos_article_schema.sql"
 
 #puts "now running jos article migration script..."
 #article_migrate

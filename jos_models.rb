@@ -94,3 +94,10 @@ end
 class JosVmProductProductTypeXref < ActiveRecord::Base
   set_table_name :jos_vm_product_product_type_xref
 end
+
+class JosColor < ActiveRecord::Base
+  set_table_name :jos_colors
+  has_and_belongs_to_many :products, :join_table => "jos_color_products", :foreign_key => :color_id, :association_foreign_key => :product_id
+end
+
+
