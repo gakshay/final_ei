@@ -187,6 +187,7 @@ CREATE TABLE `new_products` (
   `weight_unit` varchar(20) DEFAULT NULL,
   `weight_to_show` varchar(100) DEFAULT NULL,
   `brief_comments` text,
+  `keyword` text,
   `material` text,
   `frame` varchar(255) NOT NULL DEFAULT '0',
   `availability` varchar(20) DEFAULT NULL,

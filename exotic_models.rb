@@ -51,3 +51,15 @@ class SpecialSubcategory < ActiveRecord::Base
    belongs_to :subcategory
    has_and_belongs_to_many :products, :join_table => "products_special_subcategories"
 end
+
+class ProductReview < ActiveRecord::Base
+   set_table_name :product_reviews
+end
+
+class ArticleReview < ActiveRecord::Base
+   set_table_name :article_reviews
+end
+
+class ArticleNew < ActiveRecord::Base
+   set_table_name :articles_new
+end

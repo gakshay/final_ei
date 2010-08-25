@@ -72,6 +72,7 @@ class NewProduct < ActiveRecord::Base
 						 :brief_comments => book.brief_comments,
 						 :date_added => book.date_added,
 						 :sold => book.sold || "",
+						 :keyword => book.keyword,
 						 :image_path => book.URL,
 						 :archive => book.archive,
 						 :coltime => book.coltime,
@@ -192,7 +193,7 @@ class SpecialBrowseLink < ActiveRecord::Base
 																	:iscolor => sp_browse.iscolor,
 																	:available => sp_browse.available,
 																	:coltime => sp_browse.coltime,
-																	:keyword => sp_browse.coltime,
+																	:keyword => sp_browse.keyword,
 																	:description => sp_browse.description,
 																	:titletag  => sp_browse.titletag,
 																	:buttontext => sp_browse.buttontext,
@@ -296,7 +297,7 @@ class ProductMigrator
 	end
 
 	def map_product_with_sub_category
-		products = Product.collect
+		products = Product.collect(:select => "code,category, maincategory")
 		new_products = NewProduct.collect(:conditions => ['category_id <> ?', MAIN_CATEGORIES[:book]])
 		new_prod_hash = {}
 		new_products.each{|np| new_prod_hash[np.code] = np}
@@ -329,6 +330,7 @@ class ProductMigrator
 		new_product.brief_comments = ac_rec_obj.brief_comments
 		new_product.availability = ac_rec_obj.availability
 		new_product.archive = ac_rec_obj.archive
+		new_product.keyword = ac_rec_obj.keyword
 		new_product.sold = ac_rec_obj.sold
 		new_product.date_added = ac_rec_obj.date_added
 		new_product.transid = ac_rec_obj.transid
