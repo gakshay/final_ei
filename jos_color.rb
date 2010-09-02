@@ -11,7 +11,7 @@ ActiveRecord::Base.establish_connection(
             :adapter => "mysql",
             :host => "localhost",
             :username => "root",
-            :database => "clearsenses_v3"
+            :database => "clearsenses_v4"
 					)
 $log = Logger.new('color.log')
 
@@ -37,7 +37,7 @@ end
 class ProductColor
   def initialize
     @products = {}
-    products = Product.find(:all, :select => "id, code").each{|pro| @products[pro.code] = pro.id }
+    products = JosVmProduct.all.each{|pro| @products[pro.product_sku] = pro.product_id }
     @file = File.open(COLOR_FILE_PATH, "r")
     @robot = ColorScapping.new
   end
@@ -52,8 +52,8 @@ class ProductColor
         unless skus.blank? and jos_color.blank?
           $log.debug("SKUS: #{skus.join(", ")}")
           products = read_products_from_sku(skus)
-          $log.debug("Products found: #{products.collect(&:id).join(", ")}")
-          jos_color.products << products
+          $log.debug("products: #{products.length}") unless products.blank?
+          jos_color.jos_vm_product << products unless products.blank?
         end
       end
     end
@@ -72,9 +72,11 @@ class ProductColor
   def read_products_from_sku(skus)
     ids = []
     skus.each do |sku|
-      ids  << @products[sku]
+      ids  << @products[sku] unless @products[sku].blank?
     end
-    products = Product.find(:all, :conditions => ['id in (?)', ids.compact])
+    ids.compact
+    puts ids.inspect
+    products = JosVmProduct.find ids
     return products
   end
 
@@ -87,10 +89,3 @@ class ProductColor
     return jos_color
   end
 end
-
-puts "======= Running the migration ===================="
-system "mysql -u root clearsenses_v3 < jos_color_schema.sql"
-puts "======= Now fetching and populating colors ======="
-ProductColor.new.populate
-
-

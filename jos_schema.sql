@@ -206,10 +206,44 @@ CREATE TABLE IF NOT EXISTS `jos_vm_product_reviews` (
 
 DROP TABLE IF EXISTS `products_special_subcategories1`;
 CREATE TABLE IF NOT EXISTS `products_special_subcategories1` (
-  `product_id` varchar(255) default NULL,
-  `special_subcategory_id` varchar(255) default NULL,
+  `product_id` int(11) default NULL,
+  `special_subcategory_id` int(11) default NULL,
   `created_at` datetime default NULL,
   `updated_at` datetime default NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+--
+-- Table structure for table `jos_colors`
+--
+DROP TABLE IF EXISTS `jos_colors`;
+CREATE TABLE IF NOT EXISTS `jos_colors` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `color` varchar(100) NOT NULL DEFAULT '',
+  `subcategory_id` int(11) not NULL DEFAULT 0,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
+--
+-- Dumping data for table `jos_color_products`
+--
+DROP TABLE IF EXISTS `jos_color_products`;
+CREATE TABLE IF NOT EXISTS `jos_color_products` (
+  `color_id` int(11) NOT NULL DEFAULT 0,
+  `product_id` int(11) not NULL DEFAULT 0
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+--
+-- Table structure for table `jos_vm_product_relations`
+--
+
+DROP TABLE IF EXISTS `jos_vm_product_relations`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `jos_vm_product_relations` (
+  `product_id` int(11) NOT NULL DEFAULT '0', 
+  `related_products` text,
+  PRIMARY KEY (`product_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 
 

@@ -91,68 +91,68 @@ INSERT INTO `jos_vm_product_type_parameter` (`product_type_id`, `parameter_name`
 (3, 'description', 'description', '', 11, 'T', '', 'N', '', '');
 
 
---  --
---  -- Table structure for table `jos_content`
---  --
---  DROP TABLE IF EXISTS `jos_content`;
---  CREATE TABLE IF NOT EXISTS `jos_content` (
---    `id` int(11) unsigned NOT NULL auto_increment,
---    `title` varchar(255) NOT NULL default '',
---    `alias` varchar(255) NOT NULL default '',
---    `title_alias` varchar(255) NOT NULL default '',
---    `introtext` mediumtext NOT NULL,
---    `fulltext` mediumtext NOT NULL,
---    `state` tinyint(3) NOT NULL default '0',
---    `sectionid` int(11) unsigned NOT NULL default '0',
---    `mask` int(11) unsigned NOT NULL default '0',
---    `catid` int(11) unsigned NOT NULL default '0',
---    `created` datetime NOT NULL default '0000-00-00 00:00:00',
---    `created_by` int(11) unsigned NOT NULL default '0',
---    `created_by_alias` varchar(255) NOT NULL default '',
---    `modified` datetime default '0000-00-00 00:00:00',
---    `modified_by` int(11) unsigned NOT NULL default '0',
---    `checked_out` int(11) unsigned NOT NULL default '0',
---    `checked_out_time` datetime default '0000-00-00 00:00:00',
---    `publish_up` datetime default '0000-00-00 00:00:00',
---    `publish_down` datetime default '0000-00-00 00:00:00',
---    `images` text NOT NULL,
---    `urls` text NOT NULL,
---    `attribs` text NOT NULL,
---    `version` int(11) unsigned NOT NULL default '1',
---    `parentid` int(11) unsigned NOT NULL default '0',
---    `ordering` int(11) NOT NULL default '0',
---    `metakey` text NOT NULL,
---    `metadesc` text NOT NULL,
---    `access` int(11) unsigned NOT NULL default '0',
---    `hits` int(11) unsigned NOT NULL default '0',
---    `metadata` text NOT NULL,
---    PRIMARY KEY  (`id`),
---    KEY `idx_section` (`sectionid`),
---    KEY `idx_access` (`access`),
---    KEY `idx_checkout` (`checked_out`),
---    KEY `idx_state` (`state`),
---    KEY `idx_catid` (`catid`),
---    KEY `idx_createdby` (`created_by`),
---    KEY `id` (`id`)
---  ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+--
+-- Table structure for table `jos_content`
+--
+DROP TABLE IF EXISTS `jos_content`;
+CREATE TABLE IF NOT EXISTS `jos_content` (
+  `id` int(11) unsigned NOT NULL auto_increment,
+  `title` varchar(255) NOT NULL default '',
+  `alias` varchar(255) NOT NULL default '',
+  `title_alias` varchar(255) NOT NULL default '',
+  `introtext` mediumtext NOT NULL,
+  `fulltext` mediumtext NOT NULL,
+  `state` tinyint(3) NOT NULL default '0',
+  `sectionid` int(11) unsigned NOT NULL default '0',
+  `mask` int(11) unsigned NOT NULL default '0',
+  `catid` int(11) unsigned NOT NULL default '0',
+  `created` datetime NOT NULL default '0000-00-00 00:00:00',
+  `created_by` int(11) unsigned NOT NULL default '0',
+  `created_by_alias` varchar(255) NOT NULL default '',
+  `modified` datetime default '0000-00-00 00:00:00',
+  `modified_by` int(11) unsigned NOT NULL default '0',
+  `checked_out` int(11) unsigned NOT NULL default '0',
+  `checked_out_time` datetime default '0000-00-00 00:00:00',
+  `publish_up` datetime default '0000-00-00 00:00:00',
+  `publish_down` datetime default '0000-00-00 00:00:00',
+  `images` text NOT NULL,
+  `urls` text NOT NULL,
+  `attribs` text NOT NULL,
+  `version` int(11) unsigned NOT NULL default '1',
+  `parentid` int(11) unsigned NOT NULL default '0',
+  `ordering` int(11) NOT NULL default '0',
+  `metakey` text NOT NULL,
+  `metadesc` text NOT NULL,
+  `access` int(11) unsigned NOT NULL default '0',
+  `hits` int(11) unsigned NOT NULL default '0',
+  `metadata` text NOT NULL,
+  PRIMARY KEY  (`id`),
+  KEY `idx_section` (`sectionid`),
+  KEY `idx_access` (`access`),
+  KEY `idx_checkout` (`checked_out`),
+  KEY `idx_state` (`state`),
+  KEY `idx_catid` (`catid`),
+  KEY `idx_createdby` (`created_by`),
+  KEY `id` (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
---  --
---  -- Table structure for table `jos_webeeComment_Comment`
---  --
---  DROP TABLE IF EXISTS `jos_webeeComment_Comment`;
---  CREATE TABLE IF NOT EXISTS `jos_webeeComment_Comment` (
---    `id` int(10) unsigned NOT NULL auto_increment,
---    `articleId` int(10) unsigned NOT NULL default '0',
---    `content` text NOT NULL,
---    `handle` text NOT NULL,
---    `isUser` int(10) unsigned NOT NULL default '0',
---    `email` text NOT NULL,
---    `url` text,
---    `published` int(10) unsigned NOT NULL default '0',
---    `saved` datetime default '0000-00-00 00:00:00',
---    `ordering` int(10) unsigned NOT NULL default '0',
---    `hits` int(10) unsigned NOT NULL default '0',
---    `ipAddress` text,
---    PRIMARY KEY  (`id`)
---  ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+--
+-- Table structure for table `jos_webeeComment_Comment`
+--
+DROP TABLE IF EXISTS `jos_webeeComment_Comment`;
+CREATE TABLE IF NOT EXISTS `jos_webeeComment_Comment` (
+  `id` int(10) unsigned NOT NULL auto_increment,
+  `articleId` int(10) unsigned NOT NULL default '0',
+  `content` text NOT NULL,
+  `handle` text NOT NULL,
+  `isUser` int(10) unsigned NOT NULL default '0',
+  `email` text NOT NULL,
+  `url` text,
+  `published` int(10) unsigned NOT NULL default '0',
+  `saved` datetime default '0000-00-00 00:00:00',
+  `ordering` int(10) unsigned NOT NULL default '0',
+  `hits` int(10) unsigned NOT NULL default '0',
+  `ipAddress` text,
+  PRIMARY KEY  (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 

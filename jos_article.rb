@@ -5,7 +5,7 @@ ActiveRecord::Base.establish_connection(
             :adapter => "mysql",
             :host => "localhost",
             :username => "root",
-            :database => "clearsenses_v3"
+            :database => "clearsenses_v4"
 					)
 
 def article_migrate

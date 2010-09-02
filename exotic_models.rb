@@ -8,7 +8,7 @@ ActiveRecord::Base.establish_connection(
   						:adapter  =>  "mysql",
   						:host  =>  "localhost",
    					  :username  =>  "root",
-    					:database  =>  "clearsenses_v2"
+    					:database  =>  "clearsenses_v4"
 )
 
 #migration
@@ -22,7 +22,7 @@ class CreateProductSpecialSubcategory < ActiveRecord::Migration
     end
 
     def self.down
-      drop_table :sitemap_products
+      drop_table :products_special_subcategories
     end
 end
 

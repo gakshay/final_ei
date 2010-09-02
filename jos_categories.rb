@@ -3,11 +3,13 @@ require 'jos_article'
 require 'jos_category_constant'
 $log = Logger.new("jos.log")
 
+DB_NAME = "clearsenses_v4"
+DB_DUMP_PATH = "/home/akshay/DB/jos/test_sep"
 ActiveRecord::Base.establish_connection(
             :adapter => "mysql",
             :host => "localhost",
             :username => "root",
-            :database => "clearsenses_v3"
+            :database => DB_NAME
 					)
 
 @prod_fields = [:product_id, :vendor_id, :product_parent_id, :product_sku, :product_s_desc, :product_desc, 
@@ -189,28 +191,49 @@ EOF
   puts Time.now
 end
 
-#puts "migrating jos schema..."
-#system "mysql -u root clearsenses_v3 < jos_schema.sql"
+puts "migrating jos schema..."
+system "mysql -u root #{DB_NAME} < jos_schema.sql"
 
-#puts "migrating JOS categories..."
-#JosVmCategory.migrate
-#puts "now running products migration script..."
-#jos_vm_product_migration
+puts "migrating JOS categories..."
+JosVmCategory.migrate
 
-#puts "migrating jos article, webeeComment, product_type_3 schema..."
-#system "mysql -u root clearsenses_v3 < jos_article_schema.sql"
+puts "now running products migration script..."
+jos_vm_product_migration
 
-#puts "now running jos article migration script..."
-#article_migrate
+puts "migrating jos article, webeeComment, product_type_3 schema..."
+system "mysql -u root #{DB_NAME} < jos_article_schema.sql"
 
-#puts "Migrating jos_vm_specialbrowse..."
-#system "mysql -u root clearsenses_v3 --execute=\"DROP TABLE IF EXISTS jos_vm_specialbrowse; CREATE TABLE jos_vm_specialbrowse SELECT * FROM specialbrowse_links_new;\""
-#puts "Updating Subcategory_id jos_vm_specialbrowse..."
-#JosVmSpecialbrowse.update_subcategory_id
+puts "now running jos article migration script..."
+article_migrate
+
+puts "Migrating jos_vm_specialbrowse..."
+system "mysql -u root #{DB_NAME} --execute=\"DROP TABLE IF EXISTS jos_vm_specialbrowse; CREATE TABLE jos_vm_specialbrowse SELECT * FROM specialbrowse_links_new;\""
+
+puts "Updating Subcategory_id jos_vm_specialbrowse..."
+JosVmSpecialbrowse.update_subcategory_id
 
 puts "migrating jos_vm_product_type..."
 JosVmProductType3.populate
-## Now take the dump and migrate in the main DB
 
-#system "mysqldump -u root clearsenses_v3 jos_users jos_vm_category jos_vm_category_xref jos_vm_product jos_vm_product_reviews jos_vm_product_category_xref jos_vm_product_mf_xref jos_vm_product_price products_special_subcategories1 jos_content jos_webeeComment_Comment jos_vm_specialbrowse jos_vm_product_type jos_vm_product_type_3 jos_vm_product_product_type_xref jos_vm_product_type_parameter product categories subcategories specialbrowse_links_new > jos_limited_dump_06082010.sql"
+require 'jos_color'
+puts "Fetching and populating colors ======="
+ProductColor.new.populate
+
+require 'jos_product_type'
+puts "running product type creation and populating it..."
+jos_vm_product_type
+
+puts "running product relations..."
+JosVmProductRelation.populate
+
+puts "Now take the dump and migrate in the main DB"
+system "mysql -u root #{DB_NAME} --execute=\"show tables where Tables_in_#{DB_NAME} like 'jos_vm_product_type_%';\" > tmp.txt"
+arr = `cat tmp.txt`.split("\n")
+arr.delete_at(0)
+tables = arr.join(" ")
+time = Date.today.to_s
+system "mysqldump -u root #{DB_NAME} jos_users jos_vm_category jos_vm_category_xref jos_vm_product jos_vm_product_reviews jos_vm_product_category_xref jos_vm_product_mf_xref jos_vm_product_price products_special_subcategories1 jos_content jos_webeeComment_Comment jos_vm_specialbrowse jos_vm_product_type jos_vm_product_product_type_xref jos_colors jos_color_products jos_vm_product_relations #{tables} product categories subcategories specialbrowse_links_new > #{DB_DUMP_PATH}/exotic_dump_#{time}.sql"
+system "mysql -u root acuityin_exotic < #{DB_DUMP_PATH}/exotic_dump_#{time}.sql"
+
+system "mysqldump -u root acuityin_exotic > #{DB_DUMP_PATH}/jos_exotic_dump_#{time}.sql"
 
